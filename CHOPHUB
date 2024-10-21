@@ -1,0 +1,347 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Chopcheats",
+   LoadingTitle = "Best script for free✅",
+   LoadingSubtitle = "by SwordSlide",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil, -- Create a custom folder for your hub/game
+      FileName = "Big Hub"
+   },
+   Discord = {
+      Enabled = false,
+      Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ABCD would be ABCD
+      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+   },
+   KeySystem = false, -- Set this to true to use our key system
+   KeySettings = {
+      Title = "Untitled",
+      Subtitle = "Key System",
+      Note = "No method of obtaining the key is provided",
+      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+      Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+   }
+})
+
+local Tab = Window:CreateTab("Home", 111909813082111) -- Title, Image
+
+local Section = Tab:CreateSection("Aimbot")
+
+local Button = Tab:CreateButton({
+   Name = "Aimbot",
+   Callback = function()
+      loadstring(game:HttpGet('https://raw.githubusercontent.com/MacPacS/Fov-Aimbot/refs/heads/main/Aimbot%20%2B%20Fov'))()
+   end,
+})
+
+--Toggle
+
+local Section = Tab:CreateSection("Teleporter")
+
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Function to find the most distant player
+local function GetMostDistantPlayer()
+    local maxDistance = 0
+    local mostDistantPlayer = nil
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local distance = (player.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+            if distance > maxDistance then
+                maxDistance = distance
+                mostDistantPlayer = player
+            end
+        end
+    end
+
+    return mostDistantPlayer
+end
+
+-- Teleport Function
+local function TeleportToPlayer(player)
+    if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character:SetPrimaryPartCFrame(player.Character.HumanoidRootPart.CFrame)
+    end
+end
+
+-- Variables for toggle state
+local teleportEnabled = false
+
+-- Toggle for enabling/disabling the teleport functionality
+local Toggle = Tab:CreateToggle({
+    Name = "Enable Teleport",
+    CurrentValue = false,
+    Flag = "Toggle1", -- Unique flag
+    Callback = function(Value)
+        teleportEnabled = Value -- Update the toggle state
+    end,
+})
+
+-- Keybind for teleporting to the most distant player (only works if toggle is enabled)
+local Keybind = Tab:CreateKeybind({
+    Name = "Teleport to Most Distant Player",
+    CurrentKeybind = "Q",
+    HoldToInteract = false,
+    Flag = "Keybind1", -- Unique flag
+    Callback = function(Keybind)
+        if teleportEnabled then -- Check if teleport is enabled
+            local mostDistantPlayer = GetMostDistantPlayer()
+            if mostDistantPlayer then
+                TeleportToPlayer(mostDistantPlayer)
+            else
+                print("No distant player found!")
+            end
+        else
+            print("Teleport is disabled, please enable the toggle first.")
+        end
+    end,
+})
+
+
+--end toggle
+
+local Section = Tab:CreateSection("Player")
+
+local Slider = Tab:CreateSlider({
+    Name = "FOV",
+    Range = {50, 150},
+    Increment = 10,
+    Suffix = "FOV",
+    CurrentValue = 90,
+    Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+    Callback = function(Value)
+    -- Adjust the player's FOV when the slider changes
+    local player = game.Players.LocalPlayer
+    local camera = game.Workspace.CurrentCamera
+    
+    -- Set the camera's FOV to the slider value
+    camera.FieldOfView = Value
+    end,
+ })
+
+local Tab = Window:CreateTab("Visuals", 997927536) -- Title, Image
+
+local Section = Tab:CreateSection("ESP")
+
+local Button = Tab:CreateButton({
+   Name = "ESP",
+   Callback = function()
+      loadstring(game:HttpGet('https://raw.githubusercontent.com/MacPacS/RbxESP/refs/heads/main/ESP.lua'))()
+   end,
+})
+local Section = Tab:CreateSection("Skeleton")
+
+local Button = Tab:CreateButton({
+    Name = "Skeleton",
+    Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/Blissful4992/ESPs/refs/heads/main/SkeletonESP.lua'))()
+    end,
+ })
+ local Section = Tab:CreateSection("ArrowsV2")
+
+ local Button = Tab:CreateButton({
+    Name = "Arrows",
+    Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/Blissful4992/ESPs/refs/heads/main/Arrows.lua'))()
+    end,
+ })
+
+local Tab = Window:CreateTab("Settings", 10269756577) -- Title, Image
+
+local Section = Tab:CreateSection("Main - stuff")
+
+local Section = Tab:CreateSection("Ulimated jumps - broken")
+
+local Button = Tab:CreateButton({
+   Name = "Ulimated Jumps",
+   Callback = function()
+   -- Auto Bhop / Auto Jump Script
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+-- Get the local player
+local LocalPlayer = Players.LocalPlayer
+
+-- Function to check if the character is grounded (on the ground)
+local function isGrounded(humanoid)
+    return humanoid:GetState() == Enum.HumanoidStateType.Running or humanoid:GetState() == Enum.HumanoidStateType.Landed
+end
+
+-- Function to handle the auto-jump
+local function autoJump()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        
+        -- If spacebar is pressed and the character is grounded, jump
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) and isGrounded(humanoid) then
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end
+end
+
+-- Main loop to check for input and jump continuously
+while true do
+    autoJump()
+    wait(0.1) -- Adjust the wait time to control how often jumps occur
+end
+
+   end,
+})
+local Section = Tab:CreateSection("FPS booster - V2")
+
+local Button = Tab:CreateButton({
+   Name = "Fps-Booster V2",
+   Callback = function()
+   
+      --begin
+      -- Function to remove high-impact objects and set all parts to black
+local function optimizeForPerformance()
+   -- Function to blackify parts and remove unnecessary features
+   local function blackifyPart(part)
+       if part:IsA("BasePart") then
+           -- Set the part's color to black
+           part.BrickColor = BrickColor.new("Really black")
+           -- Remove any textures or decals
+           for _, child in ipairs(part:GetChildren()) do
+               if child:IsA("Texture") or child:IsA("Decal") then
+                   child:Destroy()
+               end
+           end
+           -- Remove surface effects (like studs, inlets, etc.)
+           part.TopSurface = Enum.SurfaceType.Smooth
+           part.BottomSurface = Enum.SurfaceType.Smooth
+           part.FrontSurface = Enum.SurfaceType.Smooth
+           part.BackSurface = Enum.SurfaceType.Smooth
+           part.LeftSurface = Enum.SurfaceType.Smooth
+           part.RightSurface = Enum.SurfaceType.Smooth
+           
+           -- Set material to smooth plastic
+           part.Material = Enum.Material.SmoothPlastic
+
+           -- Set transparency to 0 (removes transparent effects)
+           part.Transparency = 0
+
+           -- Remove reflectance (lower lighting calculations)
+           part.Reflectance = 0
+       end
+   end
+
+   -- Remove particles, lights, and effects
+   local function removeHighImpactObjects(object)
+       if object:IsA("ParticleEmitter") or object:IsA("Fire") or object:IsA("Smoke") or object:IsA("Sparkles") then
+           object:Destroy()
+       elseif object:IsA("Light") then
+           object.Enabled = false -- Disable all lights
+       end
+   end
+
+   -- Iterate over all objects in the workspace
+   for _, obj in ipairs(workspace:GetDescendants()) do
+       if obj:IsA("Model") then
+           -- Remove accessories from character models
+           for _, child in ipairs(obj:GetChildren()) do
+               if child:IsA("Accessory") then
+                   child:Destroy() -- Remove accessories
+               end
+           end
+           -- Blackify each part inside the model
+           for _, part in ipairs(obj:GetDescendants()) do
+               blackifyPart(part)
+               removeHighImpactObjects(part)
+           end
+       elseif obj:IsA("BasePart") then
+           blackifyPart(obj)
+       end
+       removeHighImpactObjects(obj)
+   end
+end
+
+-- Function to lower graphics settings to minimum
+local function setLowGraphicsSettings()
+   -- Get the player's graphics settings
+   local settings = UserSettings():GetService("UserGameSettings")
+
+   -- Set graphics settings to the lowest quality
+   settings.GraphicsQualityLevel = Enum.SavedQualitySetting.Low
+   settings.SavedQualityLevel = Enum.SavedQualitySetting.Low
+   settings.MasterVolume = 0 -- Optional: turn off all sounds
+end
+
+-- Disable shadows for better performance
+local function disableShadows()
+   game.Lighting.GlobalShadows = false
+   game.Lighting.OutdoorAmbient = Color3.fromRGB(127, 127, 127) -- Neutral ambient lighting
+end
+
+-- Call the functions to apply optimizations
+optimizeForPerformance()
+setLowGraphicsSettings()
+disableShadows()
+
+-- Optional: print message to indicate that optimizations have been applied
+print("Optimizations applied: All parts set to black, graphics settings set to low, and high-impact objects removed.")
+
+
+--end
+   end,
+})
+
+local Button = Tab:CreateButton({
+    Name = "Hop server",
+    Callback = function()
+        local TeleportService = game:GetService("TeleportService")
+        local Players = game:GetService("Players")
+        local player = Players.LocalPlayer
+        
+        -- Function to rejoin the game but on a different server
+        local function RejoinDifferentServer()
+            local gameId = game.PlaceId
+            local servers = TeleportService:GetPlayerPlaceInstanceAsync(gameId)
+        
+            -- Filtering out the current server's ID
+            local currentServerId = game.JobId
+            for _, server in pairs(servers) do
+                if server.JobId ~= currentServerId then
+                    -- Teleport to a different server
+                    TeleportService:TeleportToPlaceInstance(gameId, server.JobId, player)
+                    return
+                end
+            end
+        
+            -- If no different servers are found, just rejoin a random server
+            TeleportService:Teleport(gameId)
+        end
+        
+        -- Example: Calling the function to rejoin a different server
+        RejoinDifferentServer()
+        
+    end,
+ })
+
+ local Button = Tab:CreateButton({
+    Name = "Rejoin same server",
+    Callback = function()
+        local TeleportService = game:GetService("TeleportService")
+        local player = game.Players.LocalPlayer
+        
+        -- Function to rejoin the current server
+        local function RejoinSameServer()
+            local gameId = game.PlaceId
+            -- Teleport the player to the same game (rejoin)
+            TeleportService:Teleport(gameId, player)
+        end
+        
+        -- Example: Calling the function to rejoin the same server
+        RejoinSameServer()
+        
+    end,
+ })
+
+ local Section = Tab:CreateSection("made with ❤️ by SwordSlide")
