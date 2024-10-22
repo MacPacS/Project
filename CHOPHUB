@@ -1,9 +1,9 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Chopcheats",
-   LoadingTitle = "Best script for free✅",
-   LoadingSubtitle = "by SwordSlide",
+   Name = "🐱‍🐉Chopcheats🐱‍🐉",
+   LoadingTitle = "⭐Best script for free⭐",
+   LoadingSubtitle = "by ⭐SwordSlide⭐",
    ConfigurationSaving = {
       Enabled = true,
       FolderName = nil, -- Create a custom folder for your hub/game
@@ -26,16 +26,278 @@ local Window = Rayfield:CreateWindow({
    }
 })
 
+
 local Tab = Window:CreateTab("Home", 111909813082111) -- Title, Image
 
-local Section = Tab:CreateSection("Aimbot")
+local Section = Tab:CreateSection("😵‍💫Aimbot😵‍💫")
 
-local Button = Tab:CreateButton({
-   Name = "Aimbot",
-   Callback = function()
-      loadstring(game:HttpGet('https://raw.githubusercontent.com/MacPacS/Fov-Aimbot/refs/heads/main/Aimbot%20%2B%20Fov'))()
+-- Services
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local mouse = player:GetMouse()
+
+-- Create a new Drawing object for the FOV circle
+local circle = Drawing.new("Circle")
+circle.Visible = true
+circle.Color = Color3.fromRGB(255, 0, 0)
+circle.Thickness = 2
+circle.Filled = false
+
+-- Variables to store the aimbot state
+local isRightMouseDown = false
+local aimbotEnabled = false
+local aimbotConnection = nil
+local keybindEnabled = true -- New variable to track keybind state
+
+-- Function to update the FOV circle size and position
+local function updateCircle()
+    local viewportSize = camera.ViewportSize
+    local radius = math.tan(math.rad(20)) * viewportSize.Y / 2
+    circle.Position = Vector2.new(viewportSize.X / 2, viewportSize.Y / 2)
+    circle.Radius = radius
+end
+
+-- Function to check if a point is inside the FOV circle
+local function isInFOVCircle(point)
+    local circleCenter = circle.Position
+    local radius = circle.Radius
+    return (point - circleCenter).Magnitude <= radius
+end
+
+-- Function to find the closest target within the FOV
+local function findTarget()
+    local closestTarget = nil
+    local shortestDistance = math.huge
+
+    for _, otherPlayer in pairs(Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("Head") then
+            local head = otherPlayer.Character.Head
+            local screenPoint = camera:WorldToViewportPoint(head.Position)
+
+            if isInFOVCircle(Vector2.new(screenPoint.X, screenPoint.Y)) then
+                local distance = (Vector2.new(screenPoint.X, screenPoint.Y) - Vector2.new(mouse.X, mouse.Y)).Magnitude
+                if distance < shortestDistance then
+                    closestTarget = head
+                    shortestDistance = distance
+                end
+            end
+        end
+    end
+
+    return closestTarget
+end
+
+-- Function to handle aiming at the target
+local function aimAtTarget(target)
+    if target then
+        camera.CFrame = CFrame.new(camera.CFrame.Position, target.Position)
+    end
+end
+
+-- Function to continuously aim at the target while holding right-click
+local function followTarget()
+    while isRightMouseDown and aimbotEnabled do
+        local target = findTarget()
+        aimAtTarget(target)
+        RunService.RenderStepped:Wait()
+    end
+end
+
+-- Function to start the aimbot
+local function startAimbot()
+    aimbotEnabled = true
+    circle.Visible = true
+    
+    -- Update the circle on each render step
+    aimbotConnection = RunService.RenderStepped:Connect(updateCircle)
+
+    -- Connect right mouse button down event
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.UserInputType == Enum.UserInputType.MouseButton2 and not gameProcessed and aimbotEnabled and keybindEnabled then
+            isRightMouseDown = true
+            followTarget()
+        end
+    end)
+
+    -- Connect right mouse button up event
+    UserInputService.InputEnded:Connect(function(input, gameProcessed)
+        if input.UserInputType == Enum.UserInputType.MouseButton2 and not gameProcessed then
+            isRightMouseDown = false
+        end
+    end)
+end
+
+-- Function to stop the aimbot
+local function stopAimbot()
+    aimbotEnabled = false
+    circle.Visible = false
+    isRightMouseDown = false -- Ensure we stop aiming immediately
+    if aimbotConnection then
+        aimbotConnection:Disconnect()
+        aimbotConnection = nil
+    end
+end
+
+-- Keybind logic to enable/disable the aimbot
+local Keybind = Tab:CreateKeybind({
+    Name = "⌨️Aimbot Keybind⌨️",
+    CurrentKeybind = "U",
+    HoldToInteract = false,
+    Flag = "AimbotKeybind",
+    Callback = function(Keybind)
+        if keybindEnabled then
+            if aimbotEnabled then
+                stopAimbot()
+                print("Aimbot disabled")
+            else
+                startAimbot()
+                print("Aimbot enabled")
+            end
+        end
+    end,
+})
+
+-- Toggle to enable/disable the keybind
+local KeybindToggle = Tab:CreateToggle({
+    Name = "✅Enable Aimbot Keybind✅",
+    CurrentValue = true,
+    Flag = "KeybindToggle",
+    Callback = function(Value)
+        keybindEnabled = Value
+        if not keybindEnabled and aimbotEnabled then
+            stopAimbot() -- Stop aimbot if toggled off
+            print("Keybind disabled, aimbot stopped.")
+        end
+    end,
+})
+
+-- Clean up the circle when the script is disabled
+local function cleanUp()
+    if circle then
+        circle:Remove()
+    end
+    stopAimbot() -- Ensure the aimbot is stopped during cleanup
+end
+
+-- Connect the clean-up function to the script's lifecycle
+game:GetService("RunService").Stepped:Connect(function()
+    if not player.Character then
+        cleanUp()
+    end
+end)
+
+--End aimbot
+
+local Section = Tab:CreateSection("🔫TiggerBotV1🔫")
+
+-- Services
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local mouse = player:GetMouse()
+
+-- Variables to store triggerbot state
+local triggerbotEnabled = false
+local triggerbotConnection = nil
+local keybindEnabled = true -- Variable to track keybind state
+
+-- Function to check if a point is inside the screen
+local function isInScreenCenter(point)
+    local screenCenter = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+    return (point - screenCenter).Magnitude <= 50 -- Adjust the radius as needed
+end
+
+-- Function to find the closest target within the screen center
+local function findTarget()
+    local closestTarget = nil
+
+    for _, otherPlayer in pairs(Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("Head") then
+            local head = otherPlayer.Character.Head
+            local screenPoint = camera:WorldToViewportPoint(head.Position)
+
+            if isInScreenCenter(Vector2.new(screenPoint.X, screenPoint.Y)) then
+                closestTarget = head
+                break -- We only need to find one target to trigger the click
+            end
+        end
+    end
+
+    return closestTarget
+end
+
+-- Function to simulate a mouse click
+local function simulateClick()
+    local inputObject = Instance.new("InputObject")
+    inputObject.UserInputType = Enum.UserInputType.MouseButton1
+    inputObject.Position = Vector2.new(mouse.X, mouse.Y)
+
+    UserInputService.InputBegan:Fire(inputObject, false) -- Simulate mouse button down
+    UserInputService.InputEnded:Fire(inputObject, false) -- Simulate mouse button up
+end
+
+-- Function to continuously check for targets and trigger the click
+local function triggerAtTarget()
+    while triggerbotEnabled do
+        local target = findTarget()
+        if target then
+            simulateClick() -- Perform the click if a target is found
+        end
+        RunService.RenderStepped:Wait()
+    end
+end
+
+-- Function to start the triggerbot
+local function startTriggerbot()
+    triggerbotEnabled = true
+    
+    -- Start checking for targets
+    triggerAtTarget()
+end
+
+-- Function to stop the triggerbot
+local function stopTriggerbot()
+    triggerbotEnabled = false
+    if triggerbotConnection then
+        triggerbotConnection:Disconnect()
+        triggerbotConnection = nil
+    end
+end
+
+-- Keybind to control the triggerbot
+local Keybind = Tab:CreateKeybind({
+   Name = "⌨️Triggerbot Keybind⌨️",
+   CurrentKeybind = "T", -- Change to your desired key
+   HoldToInteract = false,
+   Flag = "Keybind1", -- A flag for the configuration file
+   Callback = function(Keybind)
+       if keybindEnabled then -- Check if the keybind is enabled
+           if triggerbotEnabled then
+               stopTriggerbot()
+           else
+               startTriggerbot()
+           end
+       end
    end,
 })
+
+-- Toggle to enable/disable the triggerbot keybind
+local toggleKeybindEnabled = Tab:CreateToggle({
+    Name = "✅Enable Triggerbot Keybind✅",
+    CurrentValue = true, -- Default to enabled
+    Flag = "ToggleKeybind", -- A flag for configuration
+    Callback = function(Value)
+        keybindEnabled = Value -- Update the keybind state
+    end,
+ })
+
 
 --Toggle
 
@@ -75,7 +337,7 @@ local teleportEnabled = false
 
 -- Toggle for enabling/disabling the teleport functionality
 local Toggle = Tab:CreateToggle({
-    Name = "Enable Teleport",
+    Name = "🖨️Enable Teleport🖨️",
     CurrentValue = false,
     Flag = "Toggle1", -- Unique flag
     Callback = function(Value)
@@ -85,7 +347,7 @@ local Toggle = Tab:CreateToggle({
 
 -- Keybind for teleporting to the most distant player (only works if toggle is enabled)
 local Keybind = Tab:CreateKeybind({
-    Name = "Teleport to Most Distant Player",
+    Name = "🖨️Teleport to Most Distant Player🖨️",
     CurrentKeybind = "Q",
     HoldToInteract = false,
     Flag = "Keybind1", -- Unique flag
@@ -127,26 +389,26 @@ local Slider = Tab:CreateSlider({
 
 local Tab = Window:CreateTab("Visuals", 997927536) -- Title, Image
 
-local Section = Tab:CreateSection("ESP")
+local Section = Tab:CreateSection("🔴ESP🔴")
 
 local Button = Tab:CreateButton({
-   Name = "ESP",
+   Name = "🧑ESP🧑",
    Callback = function()
       loadstring(game:HttpGet('https://raw.githubusercontent.com/MacPacS/RbxESP/refs/heads/main/ESP.lua'))()
    end,
 })
-local Section = Tab:CreateSection("Skeleton")
+local Section = Tab:CreateSection("🦴Skeleton🦴")
 
 local Button = Tab:CreateButton({
-    Name = "Skeleton",
+    Name = "🦴Skeleton🦴",
     Callback = function()
         loadstring(game:HttpGet('https://raw.githubusercontent.com/Blissful4992/ESPs/refs/heads/main/SkeletonESP.lua'))()
     end,
  })
- local Section = Tab:CreateSection("ArrowsV2")
+ local Section = Tab:CreateSection("📩ArrowsV2📩")
 
  local Button = Tab:CreateButton({
-    Name = "Arrows",
+    Name = "📩Arrows📩",
     Callback = function()
         loadstring(game:HttpGet('https://raw.githubusercontent.com/Blissful4992/ESPs/refs/heads/main/Arrows.lua'))()
     end,
@@ -154,12 +416,12 @@ local Button = Tab:CreateButton({
 
 local Tab = Window:CreateTab("Settings", 10269756577) -- Title, Image
 
-local Section = Tab:CreateSection("Main - stuff")
+local Section = Tab:CreateSection("📖Main - stuff📖")
 
-local Section = Tab:CreateSection("Ulimated jumps - broken")
+local Section = Tab:CreateSection("🦘Ulimated jumps - broken🦘")
 
 local Button = Tab:CreateButton({
-   Name = "Ulimated Jumps",
+   Name = "🦘Ulimated Jumps🦘",
    Callback = function()
    -- Auto Bhop / Auto Jump Script
 
@@ -194,10 +456,10 @@ end
 
    end,
 })
-local Section = Tab:CreateSection("FPS booster - V2")
+local Section = Tab:CreateSection("⚡FPS booster - V2⚡")
 
 local Button = Tab:CreateButton({
-   Name = "Fps-Booster V2",
+   Name = "⚡Fps-Booster V2⚡",
    Callback = function()
    
       --begin
@@ -294,7 +556,7 @@ print("Optimizations applied: All parts set to black, graphics settings set to l
 })
 
 local Button = Tab:CreateButton({
-    Name = "Hop server",
+    Name = "🐇Hop server🐇",
     Callback = function()
         local TeleportService = game:GetService("TeleportService")
         local Players = game:GetService("Players")
@@ -326,7 +588,7 @@ local Button = Tab:CreateButton({
  })
 
  local Button = Tab:CreateButton({
-    Name = "Rejoin same server",
+    Name = "🔄Rejoin same server🔄",
     Callback = function()
         local TeleportService = game:GetService("TeleportService")
         local player = game.Players.LocalPlayer
