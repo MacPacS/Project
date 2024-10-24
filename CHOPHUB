@@ -192,115 +192,6 @@ end)
 
 --End aimbot
 
-local Section = Tab:CreateSection("🔫TiggerBotV1🔫")
-
--- Services
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-
-local player = Players.LocalPlayer
-local camera = workspace.CurrentCamera
-local mouse = player:GetMouse()
-
--- Variables to store triggerbot state
-local triggerbotEnabled = false
-local triggerbotConnection = nil
-local keybindEnabled = true -- Variable to track keybind state
-
--- Function to check if a point is inside the screen
-local function isInScreenCenter(point)
-    local screenCenter = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
-    return (point - screenCenter).Magnitude <= 50 -- Adjust the radius as needed
-end
-
--- Function to find the closest target within the screen center
-local function findTarget()
-    local closestTarget = nil
-
-    for _, otherPlayer in pairs(Players:GetPlayers()) do
-        if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("Head") then
-            local head = otherPlayer.Character.Head
-            local screenPoint = camera:WorldToViewportPoint(head.Position)
-
-            if isInScreenCenter(Vector2.new(screenPoint.X, screenPoint.Y)) then
-                closestTarget = head
-                break -- We only need to find one target to trigger the click
-            end
-        end
-    end
-
-    return closestTarget
-end
-
--- Function to simulate a mouse click
-local function simulateClick()
-    local inputObject = Instance.new("InputObject")
-    inputObject.UserInputType = Enum.UserInputType.MouseButton1
-    inputObject.Position = Vector2.new(mouse.X, mouse.Y)
-
-    UserInputService.InputBegan:Fire(inputObject, false) -- Simulate mouse button down
-    UserInputService.InputEnded:Fire(inputObject, false) -- Simulate mouse button up
-end
-
--- Function to continuously check for targets and trigger the click
-local function triggerAtTarget()
-    while triggerbotEnabled do
-        local target = findTarget()
-        if target then
-            simulateClick() -- Perform the click if a target is found
-        end
-        RunService.RenderStepped:Wait()
-    end
-end
-
--- Function to start the triggerbot
-local function startTriggerbot()
-    triggerbotEnabled = true
-    
-    -- Start checking for targets
-    triggerAtTarget()
-end
-
--- Function to stop the triggerbot
-local function stopTriggerbot()
-    triggerbotEnabled = false
-    if triggerbotConnection then
-        triggerbotConnection:Disconnect()
-        triggerbotConnection = nil
-    end
-end
-
--- Keybind to control the triggerbot
-local Keybind = Tab:CreateKeybind({
-   Name = "⌨️Triggerbot Keybind⌨️",
-   CurrentKeybind = "T", -- Change to your desired key
-   HoldToInteract = false,
-   Flag = "Keybind1", -- A flag for the configuration file
-   Callback = function(Keybind)
-       if keybindEnabled then -- Check if the keybind is enabled
-           if triggerbotEnabled then
-               stopTriggerbot()
-           else
-               startTriggerbot()
-           end
-       end
-   end,
-})
-
--- Toggle to enable/disable the triggerbot keybind
-local toggleKeybindEnabled = Tab:CreateToggle({
-    Name = "✅Enable Triggerbot Keybind✅",
-    CurrentValue = true, -- Default to enabled
-    Flag = "ToggleKeybind", -- A flag for configuration
-    Callback = function(Value)
-        keybindEnabled = Value -- Update the keybind state
-    end,
- })
-
-
---Toggle
-
 local Section = Tab:CreateSection("Teleporter")
 
 
@@ -368,25 +259,6 @@ local Keybind = Tab:CreateKeybind({
 
 --end toggle
 
-local Section = Tab:CreateSection("Player")
-
-local Slider = Tab:CreateSlider({
-    Name = "FOV",
-    Range = {50, 150},
-    Increment = 10,
-    Suffix = "FOV",
-    CurrentValue = 90,
-    Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-    Callback = function(Value)
-    -- Adjust the player's FOV when the slider changes
-    local player = game.Players.LocalPlayer
-    local camera = game.Workspace.CurrentCamera
-    
-    -- Set the camera's FOV to the slider value
-    camera.FieldOfView = Value
-    end,
- })
-
 local Tab = Window:CreateTab("Visuals", 997927536) -- Title, Image
 
 local Section = Tab:CreateSection("🔴ESP🔴")
@@ -414,9 +286,82 @@ local Button = Tab:CreateButton({
     end,
  })
 
-local Tab = Window:CreateTab("Settings", 10269756577) -- Title, Image
+ local Tab = Window:CreateTab("Player", 997927536) -- Title, Image
 
-local Section = Tab:CreateSection("📖Main - stuff📖")
+ local Section = Tab:CreateSection("🔴SpinBot🔴")
+
+ --spinningbot begin
+
+ local Players = game:GetService("Players")
+ local RunService = game:GetService("RunService")
+ local LocalPlayer = Players.LocalPlayer
+ local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+ local Humanoid = Character:WaitForChild("Humanoid")
+ local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+ 
+ 
+ local Toggle = Tab:CreateToggle({
+    Name = "Enable Spinbot",
+    CurrentValue = false,
+    Flag = "Toggle1",
+    Callback = function(Value)
+        if Value then
+            activateSpicbot()
+        else
+            deactivateSpicbot()
+        end
+    end,
+ })
+ 
+ local Slider = Tab:CreateSlider({
+    Name = "Spin Speed",
+    Range = {1, 100}, -- Adjusted range for the spin speed
+    Increment = 1,
+    Suffix = "Degrees/Frame",
+    CurrentValue = 10,
+    Flag = "Slider1",
+    Callback = function(Value)
+        updateSpinSpeed(Value)
+    end,
+ })
+ 
+ -- Initialize the spicbot variables
+ local spicbotActive = false
+ local spinSpeed = 10 -- Default spin speed
+ 
+ function activateSpicbot()
+    spicbotActive = true
+    print("Spinbot activated with spin speed: " .. spinSpeed)
+ end
+ 
+ function deactivateSpicbot()
+    spicbotActive = false
+    print("Spinbot deactivated.")
+ end
+ 
+ function updateSpinSpeed(newSpeed)
+    spinSpeed = newSpeed
+    print("Spinbot spin speed updated to: " .. spinSpeed)
+ end
+ 
+ -- Main loop or functionality
+ RunService.RenderStepped:Connect(function()
+    if spicbotActive then
+        -- Spin the character in place
+        local currentCFrame = HumanoidRootPart.CFrame
+        local spinRotation = CFrame.Angles(0, math.rad(spinSpeed), 0) -- Spin around the Y-axis
+ 
+        -- Update the CFrame to create the spin effect
+        HumanoidRootPart.CFrame = currentCFrame * spinRotation
+ 
+        -- Optional: If you want to move while spinning, uncomment the following lines
+        -- local direction = currentCFrame.LookVector -- Get the forward direction
+        -- HumanoidRootPart.Position = HumanoidRootPart.Position + direction * (spicbotSpeed / 100) -- Move forward
+    end
+ end)
+ 
+
+--spingbot end
 
 local Section = Tab:CreateSection("🦘Ulimated jumps - broken🦘")
 
@@ -456,6 +401,31 @@ end
 
    end,
 })
+
+local Section = Tab:CreateSection("🔴FOV🔴")
+
+
+local Slider = Tab:CreateSlider({
+    Name = "FOV",
+    Range = {50, 150},
+    Increment = 10,
+    Suffix = "FOV",
+    CurrentValue = 90,
+    Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+    Callback = function(Value)
+    -- Adjust the player's FOV when the slider changes
+    local player = game.Players.LocalPlayer
+    local camera = game.Workspace.CurrentCamera
+    
+    -- Set the camera's FOV to the slider value
+    camera.FieldOfView = Value
+    end,
+ })
+
+local Tab = Window:CreateTab("Settings", 10269756577) -- Title, Image
+
+local Section = Tab:CreateSection("📖Main - stuff📖")
+
 local Section = Tab:CreateSection("⚡FPS booster - V2⚡")
 
 local Button = Tab:CreateButton({
